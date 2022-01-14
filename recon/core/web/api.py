@@ -496,6 +496,45 @@ class TableInst(Resource):
             'rows': rows,
         }
 
+    def post(self, table):
+        '''
+        Inserts values in the specified table
+        ---
+        parameters:
+          - name: table
+            in: path
+            description: Name of the target table
+            required: true
+            type: string
+        responses:
+            201:
+                description: Created
+            400:
+                description: Bad Request
+            404:
+                description: Not found
+        '''
+
+        if table not in recon.get_tables():
+            abort(404)
+            
+        rows = request.json.get('rows')
+        for row in rows:
+
+            cells = row.get('cells')
+            columns = ""
+            values = ""
+
+            for cell in cells:
+                columns += f"{cell.get('column')}, "
+                values += f"{cell.get('value')}, " 
+                
+            columns = columns[:-2]
+            columns = columns[:-2]
+
+            recon.query(f"INSERT INTO {table} ({columns}) VALUES ({values})", include_header=True)
+
+
 api.add_resource(TableInst, '/tables/<string:table>')
 
 
