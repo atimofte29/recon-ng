@@ -506,7 +506,7 @@ class TableInst(Resource):
             description: Name of the target table
             required: true
             type: string
-         - name: body
+          - name: body
             in: body
             description: Object containing the rows with data to insert
             schema:
