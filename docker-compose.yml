@@ -4,7 +4,7 @@ services:
 
     web:
         build: .
-        image: recon-ng-custom
+        image: recon-ng
         container_name: recon-ng
         ports:
             - '5000:5000'
@@ -18,7 +18,7 @@ services:
             - redis
 
     worker:
-        image: recon-ng-custom
+        image: recon-ng
         command: rq worker -u redis://redis:6379/0 recon-tasks
         volumes:
             - .:/recon-ng
