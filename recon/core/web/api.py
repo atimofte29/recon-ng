@@ -496,7 +496,7 @@ class TableInst(Resource):
             'rows': rows,
         }
 
-    def post(self, table):
+    def post(self):
         '''
         Inserts values in the specified table
         ---
@@ -515,6 +515,7 @@ class TableInst(Resource):
                 description: Not found
         '''
 
+        table = request.json.get('table')
         if table not in recon.get_tables():
             abort(404)
             
