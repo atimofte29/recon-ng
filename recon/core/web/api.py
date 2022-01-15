@@ -496,7 +496,7 @@ class TableInst(Resource):
             'rows': rows,
         }
 
-    def post(self):
+    def post(self, table):
         '''
         Inserts values in the specified table
         ---
@@ -506,6 +506,30 @@ class TableInst(Resource):
             description: Name of the target table
             required: true
             type: string
+         - name: rows
+            in: body
+            description: Object containing the rows with data to insert
+            schema:
+                properties:
+                    rows:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                cells:
+                                    type: array
+                                    items:
+                                        type: object
+                                        properties:
+                                            column:
+                                                type: string
+                                            value:
+                                                type: string
+                            required:
+                            - column
+                            - value
+                required:
+                - rows
         responses:
             201:
                 description: Created
@@ -514,8 +538,7 @@ class TableInst(Resource):
             404:
                 description: Not found
         '''
-
-        table = request.json.get('table')
+        
         if table not in recon.get_tables():
             abort(404)
             
