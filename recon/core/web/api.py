@@ -529,7 +529,7 @@ class TableInst(Resource):
                                         - column
                                         - value
                             required:
-                            -cells
+                            - cells
                 required:
                 - rows
         responses:
