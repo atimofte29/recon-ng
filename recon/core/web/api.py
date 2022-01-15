@@ -525,9 +525,11 @@ class TableInst(Resource):
                                                 type: string
                                             value:
                                                 type: string
+                                        required:
+                                        - column
+                                        - value
                             required:
-                            - column
-                            - value
+                            -cells
                 required:
                 - rows
         responses:
@@ -538,7 +540,7 @@ class TableInst(Resource):
             404:
                 description: Not found
         '''
-        
+
         if table not in recon.get_tables():
             abort(404)
             
