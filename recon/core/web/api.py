@@ -558,7 +558,7 @@ class TableInst(Resource):
             columns = columns[:-2]
             columns = columns[:-2]
 
-            recon.query(f"INSERT INTO {table} ({columns}) VALUES ({values})", include_header=True)
+            recon.query(f"INSERT INTO `{table}` (`{columns}`) VALUES ({values})", include_header=True)
 
 
 api.add_resource(TableInst, '/tables/<string:table>')
