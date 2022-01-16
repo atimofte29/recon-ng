@@ -544,6 +544,7 @@ class TableInst(Resource):
         if table not in recon.get_tables():
             abort(404)
             
+        total_rowcount = 0
         rows = request.json.get('rows')
         for row in rows:
             cells = row.get('cells')
@@ -554,10 +555,12 @@ class TableInst(Resource):
                 values.append(cell.get('value'))
 
             columns_str = ", ".join(columns)
-            values_str = ", ".join(values)
-            
-            recon.query(f"INSERT INTO `{table}` (`{columns_str}`) VALUES (`{values_str}`)", include_header=True)
+            placeholder_str = ", ".join('?'*len(columns))
 
+            rowcount = recon.query(f"INSERT INTO `{table}` (`{columns_str}`) VALUES (`{placeholder_str}`)", values)
+            total_rowcount += rowcount
+
+        return { 'rowCount': total_rowcount }
 
 api.add_resource(TableInst, '/tables/<string:table>')
 
