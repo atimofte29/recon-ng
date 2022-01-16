@@ -549,7 +549,7 @@ class TableInst(Resource):
         for row in rows:
             cells = row.get('cells')
             columns = []
-            values = ()
+            values = []
             for cell in cells:
                 columns.append(cell.get('column'))
                 values.append(cell.get('value'))
@@ -558,7 +558,7 @@ class TableInst(Resource):
             placeholder_str = ", ".join('?'*len(columns))
 
             query = f"INSERT INTO `{table}` (`{columns_str}`) VALUES ({placeholder_str})"
-            rowcount = recon.query(query, values)
+            rowcount = recon.query(query, tuple(values))
             total_rowcount += rowcount
 
         return { 'rowCount': total_rowcount }
