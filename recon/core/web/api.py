@@ -552,11 +552,8 @@ class TableInst(Resource):
             values = ""
 
             for cell in cells:
-                columns += f"{cell.get('column')}, "
-                values += f"{cell.get('value')}, " 
-                
-            columns = columns[:-2]
-            columns = columns[:-2]
+                columns += ", ".join(cell.get('column'))
+                values += ", ".join(cell.get('value'))
 
             recon.query(f"INSERT INTO `{table}` (`{columns}`) VALUES ({values})", include_header=True)
 
