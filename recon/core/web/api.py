@@ -546,16 +546,17 @@ class TableInst(Resource):
             
         rows = request.json.get('rows')
         for row in rows:
-
             cells = row.get('cells')
-            columns = ""
-            values = ""
-
+            columns = []
+            values = []
             for cell in cells:
-                columns += ", ".join(cell.get('column'))
-                values += ", ".join(cell.get('value'))
+                columns.append(cell.get('column'))
+                values.append(cell.get('value'))
 
-            recon.query(f"INSERT INTO `{table}` (`{columns}`) VALUES (`{values}`)", include_header=True)
+            columns_str = ", ".join(columns)
+            values_str = ", ".join(values)
+            
+            recon.query(f"INSERT INTO `{table}` (`{columns_str}`) VALUES (`{values_str}`)", include_header=True)
 
 
 api.add_resource(TableInst, '/tables/<string:table>')
