@@ -554,8 +554,8 @@ class TableInst(Resource):
                 columns.append(cell.get('column'))
                 values.append(cell.get('value'))
 
-            columns_str = ", ".join(columns)
-            placeholder_str = ", ".join('?'*len(columns))
+            columns_str = '`, `'.join(columns)
+            placeholder_str = ', '.join('?'*len(columns))
 
             query = f"INSERT INTO `{table}` (`{columns_str}`) VALUES ({placeholder_str})"
             rowcount = recon.query(query, tuple(values))
