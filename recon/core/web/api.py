@@ -241,6 +241,87 @@ class WorkspaceList(Resource):
             'workspaces': sorted(recon._get_workspaces()),
         }
 
+    def post(self):
+        '''
+        Creates a new workspace and activates it.
+        ---
+        parameters:
+          - name: body
+            in: body
+            description: Object containing the properties to update
+            schema: 
+                properties: 
+                    workspace: 
+                        type: string
+                    status:
+                        type: string
+                    options:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                value:
+                                    type: string
+                            required:
+                            - name
+                            - value
+                required:
+                - workspace
+                - status
+
+        responses:
+            200:
+                description: Object containing the modified workspace's information
+                schema:
+                    $ref: '#/definitions/Workspace'
+            400:
+                description: Bad request
+        '''
+
+        workspace = request.json.get('workspace')
+        if workspace in recon._get_workspaces():
+            abort(400)
+        
+        recon._init_workspace(workspace)
+        
+        status = request.json.get('status')
+        options = request.json.get('options')
+        # process status
+        if status:
+            # ignore everything but a request to activate
+            if status == 'active':
+                # only continue if the workspace is not already active
+                if current_app.config['WORKSPACE'] != workspace:
+                    # re-initialize the workspace and tasks object
+                    recon._init_workspace(workspace)
+                    tasks.__init__(recon)
+                    # add the workspace name the to global object
+                    current_app.config['WORKSPACE'] = workspace
+                    print((f" * Workspace initialized: {workspace}"))
+        # process options
+        if options:
+            # only continue if the workspace is active
+            if current_app.config['WORKSPACE'] == workspace:
+                for option in options:
+                    name = option.get('name')
+                    value = option.get('value')
+                    if name and value and name in recon.options:
+                        recon.options[name] = value
+                        recon._save_config(name)
+
+        return_status = 'inactive'
+        return_options = []
+        if workspace == current_app.config['WORKSPACE']:
+            return_status = 'active'
+            return_options = recon.options.serialize()
+        return {
+            'name': workspace,
+            'status': return_status,
+            'options': return_options,
+        }
+
 api.add_resource(WorkspaceList, '/workspaces/')
 
 
@@ -339,7 +420,7 @@ class WorkspaceInst(Resource):
                         recon.options[name] = value
                         recon._save_config(name)
         return self.get(workspace)
-
+            
 api.add_resource(WorkspaceInst, '/workspaces/<string:workspace>')
 
 
@@ -495,6 +576,73 @@ class TableInst(Resource):
             'columns': columns,
             'rows': rows,
         }
+
+    def post(self, table):
+        '''
+        Inserts values in the specified table
+        ---
+        parameters:
+          - name: table
+            in: path
+            description: Name of the target table
+            required: true
+            type: string
+          - name: body
+            in: body
+            description: Object containing the rows with data to insert
+            schema:
+                properties:
+                    rows:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                cells:
+                                    type: array
+                                    items:
+                                        type: object
+                                        properties:
+                                            column:
+                                                type: string
+                                            value:
+                                                type: string
+                                        required:
+                                        - column
+                                        - value
+                            required:
+                            - cells
+                required:
+                - rows
+        responses:
+            201:
+                description: Created
+            400:
+                description: Bad Request
+            404:
+                description: Not found
+        '''
+
+        if table not in recon.get_tables():
+            abort(404)
+            
+        total_rowcount = 0
+        rows = request.json.get('rows')
+        for row in rows:
+            cells = row.get('cells')
+            columns = []
+            values = []
+            for cell in cells:
+                columns.append(cell.get('column'))
+                values.append(cell.get('value'))
+
+            columns_str = '`, `'.join(columns)
+            placeholder_str = ', '.join('?'*len(columns))
+
+            query = f"INSERT INTO `{table}` (`{columns_str}`) VALUES ({placeholder_str})"
+            rowcount = recon.query(query, tuple(values))
+            total_rowcount += rowcount
+
+        return { 'rowCount': total_rowcount }
 
 api.add_resource(TableInst, '/tables/<string:table>')
 

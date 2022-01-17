@@ -12,3 +12,6 @@ dicttoxml
 XlsxWriter
 unicodecsv
 rq
+bs4
+PyPDF3
+olefile
