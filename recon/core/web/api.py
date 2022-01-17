@@ -241,6 +241,46 @@ class WorkspaceList(Resource):
             'workspaces': sorted(recon._get_workspaces()),
         }
 
+    def post(self):
+        '''
+        Creates a new workspace and activates it.
+        ---
+        parameters:
+          - name: body
+            in: body
+            description: Object containing the properties to update
+            schema: 
+                properties: 
+                    workspace: 
+                        type: string
+                required:
+                - workspace
+        responses:
+            200:
+                description: Object containing the modified workspace's information
+                schema:
+                    $ref: '#/definitions/Workspace'
+            400:
+                description: Bad request
+        '''
+
+        workspace = request.json.get('workspace')
+        if workspace in recon._get_workspaces():
+            abort(400)
+        
+        recon._init_workspace(workspace)
+        
+        status = 'inactive'
+        options = []
+        if workspace == current_app.config['WORKSPACE']:
+            status = 'active'
+            options = recon.options.serialize()
+        return {
+            'name': workspace,
+            'status': status,
+            'options': options,
+        }
+
 api.add_resource(WorkspaceList, '/workspaces/')
 
 
@@ -339,47 +379,6 @@ class WorkspaceInst(Resource):
                         recon.options[name] = value
                         recon._save_config(name)
         return self.get(workspace)
-
-
-    def post(self):
-        '''
-        Creates a new workspace and activates it.
-        ---
-        parameters:
-          - name: body
-            in: body
-            description: Object containing the properties to update
-            schema: 
-                properties: 
-                    name: 
-                        type: string
-                required:
-                - name
-        responses:
-            200:
-                description: Object containing the modified workspace's information
-                schema:
-                    $ref: '#/definitions/Workspace'
-            400:
-                description: Bad request
-        '''
-
-        workspace = request.json.get('name')
-        if workspace in recon._get_workspaces():
-            abort(400)
-        
-        recon._init_workspace(workspace)
-        
-        status = 'inactive'
-        options = []
-        if workspace == current_app.config['WORKSPACE']:
-            status = 'active'
-            options = recon.options.serialize()
-        return {
-            'name': workspace,
-            'status': status,
-            'options': options,
-        }
             
 api.add_resource(WorkspaceInst, '/workspaces/<string:workspace>')
 
