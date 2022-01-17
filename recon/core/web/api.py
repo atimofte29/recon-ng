@@ -364,7 +364,7 @@ class WorkspaceInst(Resource):
                 description: Bad request
         '''
 
-        workspace = request.json.get('workspace')
+        workspace = request.json.get('name')
         if workspace in recon._get_workspaces():
             abort(400)
         
