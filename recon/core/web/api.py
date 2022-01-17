@@ -346,15 +346,15 @@ class WorkspaceInst(Resource):
         Creates a new workspace and activates it.
         ---
         parameters:
-            - name: body
-                in: body
-                description: Object containing the properties to update
-                schema:
-                    properties:
-                        workspace:
-                            type: string
-                    required:
-                    - workspace
+          - name: body
+            in: body
+            description: Object containing the properties to update
+            schema: 
+                properties: 
+                    workspace: 
+                        type: string
+                required:
+                - workspace
         responses:
             200:
                 description: Object containing the modified workspace's information
