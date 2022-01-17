@@ -253,8 +253,24 @@ class WorkspaceList(Resource):
                 properties: 
                     workspace: 
                         type: string
+                    status:
+                        type: string
+                    options:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                value:
+                                    type: string
+                            required:
+                            - name
+                            - value
                 required:
                 - workspace
+                - status
+
         responses:
             200:
                 description: Object containing the modified workspace's information
@@ -270,16 +286,32 @@ class WorkspaceList(Resource):
         
         recon._init_workspace(workspace)
         
-        status = 'inactive'
-        options = []
-        if workspace == current_app.config['WORKSPACE']:
-            status = 'active'
-            options = recon.options.serialize()
-        return {
-            'name': workspace,
-            'status': status,
-            'options': options,
-        }
+        status = request.json.get('status')
+        options = request.json.get('options')
+        # process status
+        if status:
+            # ignore everything but a request to activate
+            if status == 'active':
+                # only continue if the workspace is not already active
+                if current_app.config['WORKSPACE'] != workspace:
+                    # re-initialize the workspace and tasks object
+                    recon._init_workspace(workspace)
+                    tasks.__init__(recon)
+                    # add the workspace name the to global object
+                    current_app.config['WORKSPACE'] = workspace
+                    print((f" * Workspace initialized: {workspace}"))
+        # process options
+        if options:
+            # only continue if the workspace is active
+            if current_app.config['WORKSPACE'] == workspace:
+                for option in options:
+                    name = option.get('name')
+                    value = option.get('value')
+                    if name and value and name in recon.options:
+                        recon.options[name] = value
+                        recon._save_config(name)
+
+        return self.get(workspace)
 
 api.add_resource(WorkspaceList, '/workspaces/')
 
