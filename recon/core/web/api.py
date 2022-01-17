@@ -311,7 +311,16 @@ class WorkspaceList(Resource):
                         recon.options[name] = value
                         recon._save_config(name)
 
-        return self.get(workspace)
+        return_status = 'inactive'
+        return_options = []
+        if workspace == current_app.config['WORKSPACE']:
+            return_status = 'active'
+            return_options = recon.options.serialize()
+        return {
+            'name': workspace,
+            'status': return_status,
+            'options': return_options,
+        }
 
 api.add_resource(WorkspaceList, '/workspaces/')
 
