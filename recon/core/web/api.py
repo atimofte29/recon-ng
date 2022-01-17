@@ -351,10 +351,10 @@ class WorkspaceInst(Resource):
             description: Object containing the properties to update
             schema: 
                 properties: 
-                    workspace: 
+                    name: 
                         type: string
                 required:
-                - workspace
+                - name
         responses:
             200:
                 description: Object containing the modified workspace's information
